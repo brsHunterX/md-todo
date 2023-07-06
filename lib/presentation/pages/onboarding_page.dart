@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:md_todo/presentation/routes.dart';
 import 'package:md_todo/presentation/widgets/app_logo.dart';
-import 'package:md_todo/presentation/widgets/hyperlink.dart';
+import 'package:md_todo/presentation/widgets/app_hyperlink.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -60,7 +60,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _buildSignUpLink() {
-    return Hyperlink(
+    return AppHyperlink(
       text: 'Didn\'t have an account? ',
       linkText: 'Sign up',
       onTap: () => Navigator.of(context).pushNamed(Routes.AUTH_SIGN_UP)

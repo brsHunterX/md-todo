@@ -1,9 +1,14 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:md_todo/domain/blocs/auth_bloc.dart';
+import 'package:md_todo/domain/events/auth_event.dart';
+import 'package:md_todo/domain/states/auth_state.dart';
+import 'package:md_todo/domain/services/locator_service.dart';
 
 import 'package:md_todo/presentation/routes.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
-import 'package:md_todo/domain/stores/auth_store.dart';
+import 'package:md_todo/presentation/widgets/app_snackbar.dart';
+import 'package:md_todo/presentation/widgets/app_text_form_field.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -13,34 +18,33 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final AuthStore _store = LocatorService.locator<AuthStore>();
+  final AuthBloc _bloc = LocatorService.locator<AuthBloc>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> _signUp() async {
-    final Map<String, dynamic> data = {
-      'first_name': _firstNameController.text,
-      'last_name': _lastNameController.text,
-      'email': _emailController.text,
-      'password': _passwordController.text,
-    };
+  void _stateListen(BuildContext context, AuthState state) {
+    if (state is AuthAuthenticatedState) {
+      Navigator.of(context).pushNamed(Routes.APP_NAVIGATION);
+    }
     
+    if (state is AuthSignInFailureState) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackBar.error(content: Text(state.message ?? '')),
+      );
+    }
+  }
+
+  Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        _store.signUp(data).then((value) {
-          Navigator.of(context).pushNamed(Routes.APP_NAVIGATION);
-        });
-      } on DioError catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.response!.data['message']),
-            backgroundColor: Theme.of(context).colorScheme.onErrorContainer,
-          ),
-        );
-      }
+      _bloc.add(AuthSignUpEvent(data: {
+        'first_name': _firstNameController.text,
+        'last_name': _lastNameController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      }));
     }
   }
 
@@ -53,21 +57,10 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget _buildFirstNameTextField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
-      child: TextFormField(
-        autofocus: true,
-        keyboardType: TextInputType.text,
+      child: AppTextFormField.name(
         controller: _firstNameController,
-        decoration: const InputDecoration(
-          labelText: 'First Name',
-          border: OutlineInputBorder(),
-          hintText: 'Jhon'
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
+        labelText: 'First Name',
+        hintText: 'Jhon',
       ),
     );
   }
@@ -75,20 +68,10 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget _buildLastNameTextField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
-      child: TextFormField(
-        keyboardType: TextInputType.text,
+      child: AppTextFormField.name(
         controller: _lastNameController,
-        decoration: const InputDecoration(
-          labelText: 'Last Name',
-          border: OutlineInputBorder(),
-          hintText: 'Doe'
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
+        labelText: 'Last Name',
+        hintText: 'Doe',
       ),
     );
   }
@@ -96,20 +79,8 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget _buildEmailTextField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
-      child: TextFormField(
-        keyboardType: TextInputType.emailAddress,
+      child: AppTextFormField.email(
         controller: _emailController,
-        decoration: const InputDecoration(
-          labelText: 'Email',
-          border: OutlineInputBorder(),
-          hintText: 'jhon_doe@gmail.com'
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
       ),
     );
   }
@@ -117,20 +88,8 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget _buildPasswordTextField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
-      child: TextFormField(
-        obscureText: true,
-        keyboardType: TextInputType.visiblePassword,
+      child: AppTextFormField.password(
         controller: _passwordController,
-        decoration: const InputDecoration(
-          labelText: 'Password',
-          border: OutlineInputBorder(),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
       ),
     );
   }
@@ -171,7 +130,11 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildBody()
+      body: BlocListener(
+        bloc: _bloc,
+        listener: _stateListen,
+        child: _buildBody(),
+      ),
     );
   }
 }

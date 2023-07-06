@@ -5,27 +5,15 @@ final class AuthLoadingEvent extends AuthEvent {}
 final class AuthIsAuthenticatedEvent extends AuthEvent {}
 
 final class AuthSignInEvent extends AuthEvent {
-  final String email;
-  final String password;
+  final Map<String, dynamic> data;
 
-  AuthSignInEvent({
-    required this.email,
-    required this.password
-  });
+  AuthSignInEvent({ required this.data });
 }
 
 final class AuthSignUpEvent extends AuthEvent {
-  final String firstName;
-  final String lastName;
-  final String email;
-  final String password;
+  final Map<String, dynamic> data;
 
-  AuthSignUpEvent({
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.password
-  });
+  AuthSignUpEvent({ required this.data });
 }
 
 final class AuthSignOutEvent extends AuthEvent {}

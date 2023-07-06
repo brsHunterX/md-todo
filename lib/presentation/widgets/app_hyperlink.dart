@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-class Hyperlink extends StatelessWidget {
-  const Hyperlink({
+class AppHyperlink extends StatelessWidget {
+  const AppHyperlink({
     super.key,
     required this.text,
     required this.linkText,

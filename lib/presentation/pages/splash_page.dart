@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import 'package:md_todo/presentation/routes.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
-import 'package:md_todo/domain/stores/auth_store.dart';
+import 'package:md_todo/domain/blocs/auth_bloc.dart';
 import 'package:md_todo/domain/states/auth_state.dart';
+import 'package:md_todo/domain/services/locator_service.dart';
+
+import 'package:md_todo/presentation/routes.dart';
 import 'package:md_todo/presentation/widgets/app_logo.dart';
 
 class SplashPage extends StatefulWidget {
@@ -15,20 +16,20 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  final AuthStore _store = LocatorService.locator<AuthStore>();
+  final AuthBloc _bloc = LocatorService.locator<AuthBloc>();
 
   @override
   void initState() {  
     super.initState();
 
     Future.delayed(const Duration(seconds: 1)).then((value) {
-      _store.isAuthenticated().then((value) {
-        if (_store.state is AuthUnauthenticatedState) {
-          Navigator.of(context).pushNamed(Routes.AUTH_ONBOARDING);
-        } else if (_store.state is AuthAuthenticatedState) {
-          Navigator.of(context).pushNamed(Routes.APP_NAVIGATION);
-        }
-      });
+      if (_bloc.state is AuthUnauthenticatedState) {
+        Navigator.of(context).pushNamedAndRemoveUntil(Routes.AUTH_ONBOARDING, (route) => false);
+      }
+      
+      if (_bloc.state is AuthAuthenticatedState) {
+        Navigator.of(context).pushNamedAndRemoveUntil(Routes.APP_NAVIGATION, (route) => false);
+      }
     });
   }
 

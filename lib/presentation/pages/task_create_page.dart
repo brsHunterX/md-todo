@@ -1,9 +1,13 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:md_todo/domain/blocs/task_bloc.dart';
+import 'package:md_todo/domain/events/task_event.dart';
 import 'package:md_todo/domain/services/locator_service.dart';
-import 'package:md_todo/presentation/routes.dart';
-import 'package:md_todo/domain/stores/task_store.dart';
+import 'package:md_todo/domain/states/task_state.dart';
+
+import 'package:md_todo/presentation/widgets/app_snackbar.dart';
+import 'package:md_todo/presentation/widgets/app_text_form_field.dart';
 
 class TaskCreatePage extends StatefulWidget {
   const TaskCreatePage({super.key});
@@ -13,10 +17,25 @@ class TaskCreatePage extends StatefulWidget {
 }
 
 class _TaskCreatePageState extends State<TaskCreatePage> {
-  final TaskStore _store = LocatorService.locator<TaskStore>();
+  final TaskBloc _bloc = LocatorService.locator<TaskBloc>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
+
+  void _stateListen(BuildContext context, TaskState state) {
+    if (state is TaskSuccessState) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackBar(content: Text(state.message ?? '')),
+      );
+      Navigator.of(context).pop();
+    }
+    
+    if (state is TaskFailureState) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackBar.error(content: Text(state.message ?? '')),
+      );
+    }
+  }
 
   void _create() async {
     final Map<String, dynamic> data = {
@@ -25,24 +44,7 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
     };
 
     if (_formKey.currentState!.validate()) {
-      try {
-        _store.create(data).then((value) {
-          Navigator.of(context).pushNamed(Routes.APP_NAVIGATION);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${data['title']} created successfully!'),
-              backgroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-          );
-        });
-      } on DioError catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.response!.data['message']),
-            backgroundColor: Theme.of(context).colorScheme.onErrorContainer,
-          ),
-        );
-      }
+      _bloc.add(TaskCreateEvent(data: data));
     }
   }
 
@@ -55,17 +57,15 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
   Widget _buildTitleTextField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
-      child: TextFormField(
+      child: AppTextFormField(
         controller: _titleController,
-        decoration: const InputDecoration(
-          labelText: 'Title',
-          border: OutlineInputBorder(),
-          hintText: 'Awesome title'
-        ),
+        hintText: 'Title',
+        labelText: 'Awesome title',
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter some text';
           }
+
           return null;
         },
       ),
@@ -75,17 +75,15 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
   Widget _buildBodyTextField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
-      child: TextFormField(
+      child: AppTextFormField(
         controller: _bodyController,
-        decoration: const InputDecoration(
-          labelText: 'Body',
-          border: OutlineInputBorder(),
-          hintText: 'Awesome task....'
-        ),
+        hintText: 'Body',
+        labelText: 'Awesome body...',
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter some text';
           }
+
           return null;
         },
       ),
@@ -126,7 +124,11 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildBody(),
+      body: BlocListener(
+        bloc: _bloc,
+        listener: _stateListen,
+        child: _buildBody(),
+      ),
     );
   }
 }

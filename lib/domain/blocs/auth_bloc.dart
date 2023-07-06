@@ -20,23 +20,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     on<AuthSignInEvent>((event, emit) async {
-      emit(AuthLoadingState());
-      await _repository.signIn({
-        'email': event.email,
-        'password': event.password
-      });
-      emit(AuthAuthenticatedState(account: await _repository.me()));
+      const String failureMsg = 'Unable to sign in. Please check your email and password and try again.';
+
+      try {  
+        emit(AuthLoadingState());
+        await _repository.signIn(event.data);
+        emit(AuthAuthenticatedState(account: await _repository.me()));
+      } on Exception catch (e) {
+        emit(AuthSignInFailureState(message: failureMsg));
+        emit(AuthUnauthenticatedState());
+      }
     });
 
     on<AuthSignUpEvent>((event, emit) async {
-      emit(AuthLoadingState());
-      await _repository.signUp({
-        'firstName': event.firstName,
-        'lastName': event.lastName,
-        'email': event.email,
-        'password': event.password
-      });
-      emit(AuthAuthenticatedState(account: await _repository.me()));
+      const String failureMsg = 'Failure to create your account. Please try again.';
+      
+      try {  
+        emit(AuthLoadingState());
+        await _repository.signUp(event.data);
+        emit(AuthAuthenticatedState(account: await _repository.me()));
+      } on Exception catch (e) {
+        emit(AuthSignUpFailureState(message: failureMsg));
+        emit(AuthUnauthenticatedState());
+      }
     });
 
     on<AuthSignOutEvent>((event, emit) async {
@@ -44,5 +50,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _repository.signOut();
       emit(AuthUnauthenticatedState());
     });
+
+    add(AuthIsAuthenticatedEvent());
   }
 }

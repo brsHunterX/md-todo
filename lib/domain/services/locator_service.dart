@@ -4,8 +4,8 @@ import 'package:md_todo/data/datasources/auth_datasource.dart';
 import 'package:md_todo/data/datasources/task_datasource.dart';
 import 'package:md_todo/data/datasources/client_datasource.dart';
 
-import 'package:md_todo/domain/stores/auth_store.dart';
-import 'package:md_todo/domain/stores/task_store.dart';
+import 'package:md_todo/domain/blocs/auth_bloc.dart';
+import 'package:md_todo/domain/blocs/task_bloc.dart';
 import 'package:md_todo/domain/repositories/auth_repository.dart';
 import 'package:md_todo/domain/repositories/task_repository.dart';
 
@@ -18,7 +18,7 @@ class LocatorService {
     locator.registerFactory<TaskDataSource>(() => TaskDataSourceImpl(locator<ClientDataSource>()));
     locator.registerFactory<AuthRepository>(() => AuthRepositoryImpl(locator<AuthDataSource>()));
     locator.registerFactory<TaskRepository>(() => TaskRepositoryImpl(locator<TaskDataSource>()));
-    locator.registerLazySingleton<AuthStore>(() => AuthStore(locator<AuthRepository>()));
-    locator.registerLazySingleton<TaskStore>(() => TaskStore(locator<TaskRepository>()));
+    locator.registerLazySingleton<AuthBloc>(() => AuthBloc(locator<AuthRepository>()));
+    locator.registerLazySingleton<TaskBloc>(() => TaskBloc(locator<TaskRepository>()));
   }
 }
