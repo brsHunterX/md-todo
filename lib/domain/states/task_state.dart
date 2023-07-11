@@ -8,7 +8,7 @@ sealed class TaskState {
 }
 
 final class TaskIdleState extends TaskState {
-  TaskIdleState() : super(tasks: []);
+  TaskIdleState({ super.message = 'You completed all tasks :D' }) : super(tasks: []);
 }
 
 final class TaskLoadingState extends TaskState {
@@ -16,7 +16,7 @@ final class TaskLoadingState extends TaskState {
 }
 
 final class TaskSuccessState extends TaskState {
-  TaskSuccessState({ required super.tasks});
+  TaskSuccessState({ required super.tasks, super.message });
 }
 
 final class TaskFailureState extends TaskState {

@@ -1,10 +1,11 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:md_todo/domain/blocs/task_bloc.dart';
+import 'package:md_todo/domain/events/task_event.dart';
 import 'package:md_todo/domain/states/task_state.dart';
-import 'package:md_todo/domain/stores/task_store.dart';
 import 'package:md_todo/domain/entities/task_entity.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
 
 import 'package:md_todo/presentation/routes.dart';
 import 'package:md_todo/presentation/widgets/app_logo.dart';
@@ -19,12 +20,13 @@ class TaskListPage extends StatefulWidget {
 }
 
 class _TaskListPageState extends State<TaskListPage> {
-  final TaskStore _store = LocatorService.locator<TaskStore>();
+  final TaskBloc _bloc = GetIt.instance<TaskBloc>();
 
   @override
   void initState() {
-    _store.list();
     super.initState();
+
+    _bloc.add(TaskListEvent());
   }
 
   AppBar _buildAppBar() {
@@ -47,16 +49,23 @@ class _TaskListPageState extends State<TaskListPage> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return const AppEmptyState.icon(
+  Widget _buildIdleState(String message) {
+    return AppEmptyState.icon(
       icon: Icons.checklist_rounded,
-      message: 'You completed all tasks :D'
+      message: message
+    );
+  }
+  
+  Widget _buildFailureState(String message) {
+    return AppEmptyState.icon(
+      icon: Icons.error_outline_rounded,
+      message: message
     );
   }
 
   Widget _buildList(List<Task> tasks) {
     return RefreshIndicator(
-      onRefresh: _store.list,
+      onRefresh: () => Future.value(null),
       child: ListView.separated(
         itemCount: tasks.length,
         separatorBuilder: (context, index) => const Divider(),
@@ -66,12 +75,13 @@ class _TaskListPageState extends State<TaskListPage> {
   }
 
   Widget _buildBody() {
-    return Observer(
-      builder: (BuildContext _) {
-        return switch(_store.state) {
-          TaskIdleState() => _buildEmptyState(),
+    return BlocBuilder<TaskBloc, TaskState>(
+      bloc: _bloc,
+      builder: (BuildContext context, TaskState state) {
+        return switch(state) {
           TaskLoadingState() => _buildProgressIndicator(),
-          TaskFailureState(message: final message) => Text(message ?? ''),
+          TaskIdleState(message: final message) => _buildIdleState(message ?? ''),
+          TaskFailureState(message: final message) => _buildFailureState(message ?? ''),
           TaskSuccessState(tasks: final tasks) => _buildList(tasks),
         };
       }

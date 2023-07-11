@@ -1,20 +1,21 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 
-import 'package:md_todo/domain/services/locator_service.dart';
+import 'package:md_todo/domain/blocs/task_bloc.dart';
+import 'package:md_todo/domain/events/task_event.dart';
 import 'package:md_todo/domain/entities/task_entity.dart';
-import 'package:md_todo/domain/stores/task_store.dart';
 
 class TaskListTile extends StatelessWidget {
   final Task task;
+  final TaskBloc _bloc = GetIt.instance<TaskBloc>();
 
-  const TaskListTile({
+  TaskListTile({
     super.key,
     required this.task,
   });
 
   @override
   Widget build(BuildContext context) {
-    final TaskStore store = LocatorService.locator<TaskStore>();
 
     final Container background = Container(
       alignment: Alignment.centerLeft,
@@ -41,9 +42,9 @@ class TaskListTile extends StatelessWidget {
       secondaryBackground: sBackground,
       onDismissed: (DismissDirection direction) {
         if (direction == DismissDirection.startToEnd) {
-          store.complete(task.id);
+          _bloc.add(TaskCompleteEvent(id: task.id));
         } else {
-          store.delete(task.id);
+          _bloc.add(TaskDeleteEvent(id: task.id));
         }
       },
       child: tile,

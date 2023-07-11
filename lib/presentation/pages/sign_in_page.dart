@@ -1,9 +1,15 @@
-import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:md_todo/domain/blocs/auth_bloc.dart';
+import 'package:md_todo/domain/dtos/auth_sign_in_dto.dart';
+import 'package:md_todo/domain/events/auth_event.dart';
+import 'package:md_todo/domain/states/auth_state.dart';
 
 import 'package:md_todo/presentation/routes.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
-import 'package:md_todo/domain/stores/auth_store.dart';
+import 'package:md_todo/presentation/widgets/app_snackbar.dart';
+import 'package:md_todo/presentation/widgets/app_text_form_field.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -13,30 +19,29 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
-  final AuthStore _store = LocatorService.locator<AuthStore>();
+  final AuthBloc _bloc = GetIt.instance<AuthBloc>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _signIn() async {
-    final Map<String, dynamic> data = {
-      'email': _emailController.text,
-      'password': _passwordController.text,
-    };
+  void _stateListen(BuildContext context, AuthState state) {
+    if (state is AuthAuthenticatedState) {
+      Navigator.of(context).pushNamedAndRemoveUntil(Routes.APP_NAVIGATION, (route) => false);
+    }
+    
+    if (state is AuthSignInFailureState) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        AppSnackBar.error(content: Text(state.message ?? '')),
+      );
+    }
+  }
 
+  void _signIn() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        _store.signIn(data).then((value) {
-          Navigator.of(context).pushNamed(Routes.APP_NAVIGATION);
-        });
-      } on DioError catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.response!.data['message']),
-            backgroundColor: Theme.of(context).colorScheme.onErrorContainer,
-          ),
-        );
-      }
+      _bloc.add(AuthSignInEvent(dto: AuthSignInDTO(
+        email: _emailController.text,
+        password: _passwordController.text,
+      )));
     }
   }
 
@@ -46,24 +51,12 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Widget _buildEmailTextField() {
+  Widget _buildEmailTextField() {   
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
-      child: TextFormField(
-        controller: _emailController,
+      child: AppTextFormField.email(
         autofocus: true,
-        keyboardType: TextInputType.emailAddress,
-        decoration: const InputDecoration(
-          labelText: 'Email',
-          border: OutlineInputBorder(),
-          hintText: 'jhon_doe@gmail.com'
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
+        controller: _emailController,
       ),
     );
   }
@@ -71,20 +64,8 @@ class _SignInPageState extends State<SignInPage> {
   Widget _buildPasswordTextField() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
-      child: TextFormField(
+      child: AppTextFormField.password(
         controller: _passwordController,
-        obscureText: true,
-        keyboardType: TextInputType.visiblePassword,
-        decoration: const InputDecoration(
-          labelText: 'Password',
-          border: OutlineInputBorder(),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
       ),
     );
   }
@@ -124,7 +105,11 @@ class _SignInPageState extends State<SignInPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildBody(),
+      body: BlocListener(
+        bloc: _bloc,
+        listener: _stateListen,
+        child: _buildBody()
+      ),
     );
   }
 }

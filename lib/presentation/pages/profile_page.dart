@@ -1,13 +1,11 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+
 import 'package:md_todo/domain/blocs/auth_bloc.dart';
-import 'package:md_todo/domain/entities/account_entity.dart';
 import 'package:md_todo/domain/events/auth_event.dart';
 
 import 'package:md_todo/presentation/routes.dart';
-import 'package:md_todo/domain/states/auth_state.dart';
-import 'package:md_todo/domain/stores/auth_store.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,7 +15,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final AuthStore _store = LocatorService.locator<AuthStore>();
+  final AuthBloc _bloc = GetIt.instance<AuthBloc>();
 
   @override
   void dispose() {
@@ -36,19 +34,19 @@ class _ProfilePageState extends State<ProfilePage> {
     return Observer(
       builder: (BuildContext context) {
         return ListTile(
-          leading: _store.state.account?.hasAvatar ?? false
+          leading: _bloc.state.account?.hasAvatar ?? false
             ? CircleAvatar(
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
               backgroundColor: Theme.of(context).colorScheme.primary,
-              backgroundImage: NetworkImage(_store.state.account?.avatar ?? ''),
+              backgroundImage: NetworkImage(_bloc.state.account?.avatar ?? ''),
             )
             : CircleAvatar(
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
               backgroundColor: Theme.of(context).colorScheme.primary,
-              child: Text(_store.state.account?.shortName ?? ''),
+              child: Text(_bloc.state.account?.shortName ?? ''),
             ),
-          title: Text(_store.state.account?.fullName ?? ''),
-          subtitle: Text(_store.state.account?.email ?? ''),
+          title: Text(_bloc.state.account?.fullName ?? ''),
+          subtitle: Text(_bloc.state.account?.email ?? ''),
         );
       }
     );
@@ -95,15 +93,15 @@ class _ProfilePageState extends State<ProfilePage> {
       title: const Text('Sign out'),
       subtitle: const Text('Terminate session.'),
       onTap: () async {
-        Navigator.of(context).pushNamed(Routes.AUTH_ONBOARDING);
-        _store.signOut();
+        Navigator.of(context).pushNamedAndRemoveUntil(Routes.AUTH_ONBOARDING, (routes) => false);
+        _bloc.add(AuthSignOutEvent());
       }
     );
   }
 
   Widget _buildBody() {
     return RefreshIndicator(
-      // onRefresh: _store.me,
+      // onRefresh: _bloc.me,
       onRefresh: () => Future.value(),
       child: ListView(
         children: [
