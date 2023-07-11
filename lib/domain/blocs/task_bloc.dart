@@ -25,12 +25,12 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     });
 
     on<TaskCreateEvent>((event, emit) async {
-      final String successMsg = '${event.data['title']} created successfully!';
-      final String failuresMsg = 'Failure to create ${event.data['title']}. Please try again.';
+      final String successMsg = '${event.dto.title} created successfully!';
+      final String failuresMsg = 'Failure to create ${event.dto.title}. Please try again.';
       
       try {
         emit(TaskLoadingState());
-        await _repository.create(event.data);
+        await _repository.create(event.dto);
         final List<Task> tasks = await _repository.list();
         emit(TaskSuccessState(tasks: tasks, message: successMsg));
       } on Exception {

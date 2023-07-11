@@ -1,11 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:md_todo/data/adapters/task_adapter.dart';
 
 import 'package:md_todo/data/datasources/client_datasource.dart';
+
+import 'package:md_todo/domain/dtos/task_create_dto.dart';
 import 'package:md_todo/domain/entities/task_entity.dart';
 
 abstract class TaskDataSource {
   Future<List<Task>> all();
-  Future<void> store(Map<String, dynamic> data);
+  Future<void> store(TaskCreateDTO dto);
   Future<void> remove(String id);
   Future<void> complete(String id);
 }
@@ -18,26 +21,19 @@ class TaskDataSourceImpl implements TaskDataSource {
   @override
   Future<List<Task>> all() async {
     try {
-      final Response response = await client.get('/tasks');
+      final Response response = await client.get<Map<String, dynamic>>('/tasks');
 
-      return (response.data['data'] as List)
-        .map((dynamic item) => Task(
-          id: item['id'],
-          createdAt: item['attributes']['created-at'],
-          title: item['attributes']['title'],
-          body: item['attributes']['body'],
-        ))
-        .toList();
-    } on Exception {
+      return TaskAdapater.fromListRestAPI(response.data['data'] as List);
+    } on Exception catch (e) {
       rethrow;
     }
 
   }
 
   @override
-  Future<void> store(Map<String, dynamic> data) async {
+  Future<void> store(TaskCreateDTO dto) async {
     try {
-      await client.post('/tasks', data);
+      await client.post('/tasks', dto.toRemote());
     } on Exception {
       rethrow;
     }

@@ -1,10 +1,11 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:md_todo/domain/blocs/auth_bloc.dart';
+import 'package:md_todo/domain/dtos/auth_sign_up_dto.dart';
 import 'package:md_todo/domain/events/auth_event.dart';
 import 'package:md_todo/domain/states/auth_state.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
 
 import 'package:md_todo/presentation/routes.dart';
 import 'package:md_todo/presentation/widgets/app_snackbar.dart';
@@ -18,7 +19,7 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final AuthBloc _bloc = LocatorService.locator<AuthBloc>();
+  final AuthBloc _bloc = GetIt.instance<AuthBloc>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -39,12 +40,12 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
-      _bloc.add(AuthSignUpEvent(data: {
-        'first_name': _firstNameController.text,
-        'last_name': _lastNameController.text,
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      }));
+      _bloc.add(AuthSignUpEvent(dto: AuthSignUpDTO(
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+      )));
     }
   }
 

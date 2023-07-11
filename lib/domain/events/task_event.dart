@@ -1,3 +1,5 @@
+import 'package:md_todo/domain/dtos/task_create_dto.dart';
+
 sealed class TaskEvent {}
 
 final class TaskLoadingEvent extends TaskEvent {}
@@ -5,9 +7,9 @@ final class TaskLoadingEvent extends TaskEvent {}
 final class TaskListEvent extends TaskEvent {}
 
 final class TaskCreateEvent extends TaskEvent {
-  final Map<String, dynamic> data;
+  final TaskCreateDTO dto;
 
-  TaskCreateEvent({ required this.data });
+  TaskCreateEvent({ required this.dto });
 }
 
 final class TaskDeleteEvent extends TaskEvent {

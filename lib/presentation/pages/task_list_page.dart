@@ -1,3 +1,4 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -5,7 +6,6 @@ import 'package:md_todo/domain/blocs/task_bloc.dart';
 import 'package:md_todo/domain/events/task_event.dart';
 import 'package:md_todo/domain/states/task_state.dart';
 import 'package:md_todo/domain/entities/task_entity.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
 
 import 'package:md_todo/presentation/routes.dart';
 import 'package:md_todo/presentation/widgets/app_logo.dart';
@@ -20,7 +20,7 @@ class TaskListPage extends StatefulWidget {
 }
 
 class _TaskListPageState extends State<TaskListPage> {
-  final TaskBloc _bloc = LocatorService.locator<TaskBloc>();
+  final TaskBloc _bloc = GetIt.instance<TaskBloc>();
 
   @override
   void initState() {

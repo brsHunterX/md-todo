@@ -1,10 +1,11 @@
-
-import 'package:md_todo/domain/entities/task_entity.dart';
 import 'package:md_todo/data/datasources/task_datasource.dart';
+
+import 'package:md_todo/domain/dtos/task_create_dto.dart';
+import 'package:md_todo/domain/entities/task_entity.dart';
 
 abstract interface class TaskRepository {
   Future<List<Task>> list();
-  Future<void> create(Map<String, dynamic> data);
+  Future<void> create(TaskCreateDTO dto);
   Future<void> complete(String id);
   Future<void> delete(String id);
 }
@@ -25,9 +26,9 @@ class TaskRepositoryImpl implements TaskRepository {
   }
   
   @override
-  Future<void> create(Map<String, dynamic> data) async {
+  Future<void> create(TaskCreateDTO dto) async {
     try {
-      return await _datasource.store(data);
+      return await _datasource.store(dto);
     } on Exception {
       rethrow;
     }

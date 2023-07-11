@@ -1,10 +1,11 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:md_todo/domain/blocs/auth_bloc.dart';
+import 'package:md_todo/domain/dtos/auth_sign_in_dto.dart';
 import 'package:md_todo/domain/events/auth_event.dart';
 import 'package:md_todo/domain/states/auth_state.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
 
 import 'package:md_todo/presentation/routes.dart';
 import 'package:md_todo/presentation/widgets/app_snackbar.dart';
@@ -18,7 +19,7 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
-  final AuthBloc _bloc = LocatorService.locator<AuthBloc>();
+  final AuthBloc _bloc = GetIt.instance<AuthBloc>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -37,10 +38,10 @@ class _SignInPageState extends State<SignInPage> {
 
   void _signIn() async {
     if (_formKey.currentState!.validate()) {
-      _bloc.add(AuthSignInEvent(data: {
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      }));
+      _bloc.add(AuthSignInEvent(dto: AuthSignInDTO(
+        email: _emailController.text,
+        password: _passwordController.text,
+      )));
     }
   }
 

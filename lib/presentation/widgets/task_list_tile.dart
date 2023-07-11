@@ -1,13 +1,13 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
+
 import 'package:md_todo/domain/blocs/task_bloc.dart';
 import 'package:md_todo/domain/events/task_event.dart';
-
-import 'package:md_todo/domain/services/locator_service.dart';
 import 'package:md_todo/domain/entities/task_entity.dart';
 
 class TaskListTile extends StatelessWidget {
   final Task task;
-  final TaskBloc _bloc = LocatorService.locator<TaskBloc>();
+  final TaskBloc _bloc = GetIt.instance<TaskBloc>();
 
   TaskListTile({
     super.key,

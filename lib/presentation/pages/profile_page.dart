@@ -1,9 +1,9 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 
 import 'package:md_todo/domain/blocs/auth_bloc.dart';
 import 'package:md_todo/domain/events/auth_event.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
 
 import 'package:md_todo/presentation/routes.dart';
 
@@ -15,7 +15,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final AuthBloc _bloc = LocatorService.locator<AuthBloc>();
+  final AuthBloc _bloc = GetIt.instance<AuthBloc>();
 
   @override
   void dispose() {

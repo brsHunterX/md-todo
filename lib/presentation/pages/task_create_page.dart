@@ -1,9 +1,10 @@
+import 'package:get_it/get_it.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:md_todo/domain/blocs/task_bloc.dart';
+import 'package:md_todo/domain/dtos/task_create_dto.dart';
 import 'package:md_todo/domain/events/task_event.dart';
-import 'package:md_todo/domain/services/locator_service.dart';
 import 'package:md_todo/domain/states/task_state.dart';
 
 import 'package:md_todo/presentation/widgets/app_snackbar.dart';
@@ -17,7 +18,7 @@ class TaskCreatePage extends StatefulWidget {
 }
 
 class _TaskCreatePageState extends State<TaskCreatePage> {
-  final TaskBloc _bloc = LocatorService.locator<TaskBloc>();
+  final TaskBloc _bloc = GetIt.instance<TaskBloc>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
@@ -38,13 +39,11 @@ class _TaskCreatePageState extends State<TaskCreatePage> {
   }
 
   void _create() async {
-    final Map<String, dynamic> data = {
-      'title': _titleController.text,
-      'body': _bodyController.text,
-    };
-
     if (_formKey.currentState!.validate()) {
-      _bloc.add(TaskCreateEvent(data: data));
+      _bloc.add(TaskCreateEvent(dto: TaskCreateDTO(
+        title: _titleController.text,
+        body: _bodyController.text,
+      )));
     }
   }
 

@@ -24,7 +24,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       try {  
         emit(AuthLoadingState());
-        await _repository.signIn(event.data);
+        await _repository.signIn(event.dto);
         emit(AuthAuthenticatedState(account: await _repository.me()));
       } on Exception catch (e) {
         emit(AuthSignInFailureState(message: failureMsg));
@@ -37,7 +37,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       
       try {  
         emit(AuthLoadingState());
-        await _repository.signUp(event.data);
+        await _repository.signUp(event.dto);
         emit(AuthAuthenticatedState(account: await _repository.me()));
       } on Exception catch (e) {
         emit(AuthSignUpFailureState(message: failureMsg));
